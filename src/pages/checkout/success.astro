@@ -1,0 +1,19 @@
+---
+import Base from "../../layouts/Base.astro";
+const sessionId = Astro.url.searchParams.get("session_id") || "";
+---
+<Base title="Thanks \u2014 Harmony Threads" description="Order confirmation." noindex={true}>
+  <section class="max-w-2xl mx-auto px-5 md:px-8 py-24 text-center">
+    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber/15 text-amber mb-6">
+      <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    <h1 class="font-display text-5xl">Track 1 pressed.</h1>
+    <p class="mt-4 text-paper/75 text-lg">Your order is in. A confirmation email is on its way \u2014 physical items ship within 2-3 working days, digital downloads are already in your inbox.</p>
+    {sessionId && <p class="mt-2 text-xs text-paper/50 font-mono">Ref {sessionId.slice(-10).toUpperCase()}</p>}
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <a href="/shop" class="rounded-full bg-amber text-ink font-semibold px-6 py-3 hover:bg-amber-dark">Keep shopping</a>
+      <a href="/" class="rounded-full border border-white/20 px-6 py-3 hover:border-amber">Back home</a>
+    </div>
+  </section>
+  <script is:inline>localStorage.removeItem('ht-cart'); window.dispatchEvent(new Event('ht-cart-changed'));</script>
+</Base>

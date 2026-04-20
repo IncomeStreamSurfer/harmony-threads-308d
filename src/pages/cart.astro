@@ -1,0 +1,115 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base title="Cart \u00b7 Harmony Threads" description="Review your cart and check out securely via Stripe." noindex={true}>
+  <section class="max-w-4xl mx-auto px-5 md:px-8 py-16">
+    <h1 class="font-display text-4xl md:text-5xl">Your cart</h1>
+    <div id="cart-root" class="mt-10"></div>
+    <div id="empty-state" class="mt-10 rounded-2xl border border-white/10 bg-black/40 p-10 text-center hidden">
+      <p class="text-paper/70">Nothing in the cart yet.</p>
+      <a href="/shop" class="inline-block mt-4 rounded-full bg-amber text-ink font-semibold px-6 py-3 hover:bg-amber-dark">Browse the shop \u2192</a>
+    </div>
+    <div id="error-box" class="mt-6 hidden rounded-lg border border-rust/50 bg-rust/10 text-paper p-4 text-sm"></div>
+  </section>
+
+  <script is:inline>
+    (function () {
+      var root = document.getElementById('cart-root');
+      var empty = document.getElementById('empty-state');
+      var errBox = document.getElementById('error-box');
+
+      function fmt(p) { return '\u00a3' + (p/100).toFixed(2); }
+      function read() { try { return JSON.parse(localStorage.getItem('ht-cart') || '[]'); } catch (e) { return []; } }
+      function save(c) { localStorage.setItem('ht-cart', JSON.stringify(c)); window.dispatchEvent(new Event('ht-cart-changed')); }
+
+      function render() {
+        var cart = read();
+        if (!cart.length) { root.innerHTML = ''; empty.classList.remove('hidden'); return; }
+        empty.classList.add('hidden');
+        var subtotal = cart.reduce(function (s, i) { return s + i.price_pence * i.quantity; }, 0);
+        var needsShipping = cart.some(function (i) { return i.requires_shipping; });
+        var shipping = needsShipping ? (subtotal >= 4000 ? 0 : 550) : 0;
+        var total = subtotal + shipping;
+
+        root.innerHTML = [
+          '<div class="rounded-2xl border border-white/10 overflow-hidden">',
+          cart.map(function (i, idx) {
+            var opts = [];
+            if (i.size) opts.push(i.size);
+            if (i.color) opts.push(i.color);
+            return [
+              '<div class="flex gap-4 p-4 md:p-6 border-b border-white/10 last:border-b-0 bg-black/40">',
+                '<img src="', i.image, '" alt="" class="w-20 h-20 md:w-24 md:h-24 rounded-lg object-cover"/>',
+                '<div class="flex-1 min-w-0">',
+                  '<p class="font-display text-lg leading-tight truncate">', i.title, '</p>',
+                  opts.length ? '<p class="text-xs text-paper/60 mt-1 capitalize">' + opts.join(' \u00b7 ') + '</p>' : '',
+                  '<div class="mt-3 flex items-center gap-3">',
+                    '<div class="inline-flex items-center border border-white/20 rounded-lg text-sm">',
+                      '<button class="w-9 h-9" data-act="dec" data-idx="'+idx+'">\u2013</button>',
+                      '<span class="w-8 text-center">'+i.quantity+'</span>',
+                      '<button class="w-9 h-9" data-act="inc" data-idx="'+idx+'">+</button>',
+                    '</div>',
+                    '<button class="text-xs text-paper/60 hover:text-amber" data-act="rm" data-idx="'+idx+'">Remove</button>',
+                  '</div>',
+                '</div>',
+                '<div class="text-right">',
+                  '<p class="font-display text-lg">', fmt(i.price_pence*i.quantity), '</p>',
+                  '<p class="text-xs text-paper/50">', fmt(i.price_pence), ' ea</p>',
+                '</div>',
+              '</div>'
+            ].join('');
+          }).join(''),
+          '</div>',
+          '<div class="mt-8 grid md:grid-cols-5 gap-6">',
+            '<div class="md:col-span-3 text-sm text-paper/70">',
+              '<p>',(needsShipping ? 'Ships worldwide from Manchester, UK. Free UK delivery over \u00a340.' : 'This cart is digital-only \u2014 delivered instantly to your inbox.'),'</p>',
+              '<p class="mt-2">Your payment is processed securely by Stripe. We never see your card details.</p>',
+            '</div>',
+            '<div class="md:col-span-2 rounded-2xl border border-white/10 bg-black/50 p-6">',
+              '<dl class="space-y-2 text-sm">',
+                '<div class="flex justify-between"><dt class="text-paper/60">Subtotal</dt><dd>',fmt(subtotal),'</dd></div>',
+                '<div class="flex justify-between"><dt class="text-paper/60">Shipping</dt><dd>',(shipping===0?(needsShipping?'Free':'\u2014'):fmt(shipping)),'</dd></div>',
+                '<div class="flex justify-between font-display text-lg pt-2 border-t border-white/10"><dt>Total</dt><dd>',fmt(total),'</dd></div>',
+              '</dl>',
+              '<button id="checkout-btn" class="mt-6 w-full rounded-full bg-amber text-ink font-semibold px-6 py-3 hover:bg-amber-dark">Checkout securely \u2192</button>',
+              '<p class="mt-3 text-[11px] text-paper/50 text-center">You will be redirected to Stripe Checkout</p>',
+            '</div>',
+          '</div>',
+        ].join('');
+
+        root.querySelectorAll('[data-act]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var act = b.dataset.act, idx = Number(b.dataset.idx);
+            var c = read();
+            if (act === 'inc') c[idx].quantity = Math.min(10, c[idx].quantity + 1);
+            if (act === 'dec') c[idx].quantity = Math.max(1, c[idx].quantity - 1);
+            if (act === 'rm') c.splice(idx, 1);
+            save(c); render();
+          });
+        });
+        document.getElementById('checkout-btn').addEventListener('click', checkout);
+      }
+
+      async function checkout() {
+        errBox.classList.add('hidden');
+        var btn = document.getElementById('checkout-btn');
+        btn.disabled = true; btn.textContent = 'Routing to Stripe\u2026';
+        try {
+          var r = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: read() }) });
+          var j = await r.json();
+          if (!r.ok || !j.url) throw new Error(j.error || 'Could not start checkout');
+          window.location.href = j.url;
+        } catch (e) {
+          btn.disabled = false; btn.textContent = 'Checkout securely \u2192';
+          errBox.textContent = e.message;
+          errBox.classList.remove('hidden');
+        }
+      }
+
+      window.addEventListener('storage', render);
+      window.addEventListener('ht-cart-changed', render);
+      render();
+      if (new URLSearchParams(location.search).get('checkout') === '1') checkout();
+    })();
+  </script>
+</Base>

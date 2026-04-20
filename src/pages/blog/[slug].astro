@@ -1,0 +1,80 @@
+---
+import Base from "../../layouts/Base.astro";
+import { supabase, type DbContent } from "../../lib/supabase";
+
+export const prerender = false;
+
+const slug = Astro.params.slug;
+let post: DbContent | null = null;
+try {
+  const { data } = await supabase
+    .from("content")
+    .select("*")
+    .eq("slug", slug)
+    .not("published_at", "is", null)
+    .maybeSingle();
+  if (data) post = data as DbContent;
+} catch (e) {}
+
+if (!post) return Astro.redirect("/blog", 302);
+
+function renderBody(md: string): string {
+  const html = md
+    .split(/\n\n+/)
+    .map((block) => {
+      if (/^#\s/.test(block))   return `<h2 class="font-display text-3xl mt-10 mb-4">${block.replace(/^#\s/, "")}</h2>`;
+      if (/^##\s/.test(block))  return `<h3 class="font-display text-2xl mt-8 mb-3">${block.replace(/^##\s/, "")}</h3>`;
+      return `<p class="my-4 text-paper/80 leading-relaxed">${block.replace(/\[(.+?)\]\((.+?)\)/g, '<a class="text-amber underline" href="$2">$1</a>').replace(/\n/g, "<br/>")}</p>`;
+    })
+    .join("");
+  return html;
+}
+
+const schema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    datePublished: post.published_at,
+    dateModified: post.published_at,
+    author: { "@type": "Organization", name: "Harmony Threads" },
+    publisher: { "@type": "Organization", name: "Harmony Threads", logo: { "@type": "ImageObject", url: new URL("/favicon.svg", Astro.site).toString() } },
+    image: post.cover_image_url,
+    description: post.seo_description || post.excerpt || "",
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: Astro.site?.toString() },
+      { "@type": "ListItem", position: 2, name: "Journal", item: new URL("/blog", Astro.site).toString() },
+      { "@type": "ListItem", position: 3, name: post.title, item: new URL(`/blog/${post.slug}`, Astro.site).toString() },
+    ],
+  },
+];
+---
+<Base
+  title={post.seo_title || post.title}
+  description={post.seo_description || post.excerpt || ""}
+  ogImage={post.cover_image_url || undefined}
+  ogType="article"
+  publishDate={post.published_at || undefined}
+  modifiedDate={post.published_at || undefined}
+  tags={post.tags || []}
+  structuredData={schema}
+>
+  <article class="max-w-3xl mx-auto px-5 md:px-8 pt-16 pb-24">
+    <nav class="text-xs text-paper/60 mb-8">
+      <a href="/" class="hover:text-amber">Home</a>
+      <span class="mx-2">/</span>
+      <a href="/blog" class="hover:text-amber">Journal</a>
+      <span class="mx-2">/</span>
+      <span class="text-paper/80">{post.title}</span>
+    </nav>
+    <p class="text-xs text-paper/50">{post.published_at ? new Date(post.published_at).toLocaleDateString("en-GB",{ day: "numeric", month: "long", year: "numeric" }) : ""}</p>
+    <h1 class="font-display text-4xl md:text-5xl mt-2 leading-tight">{post.title}</h1>
+    {post.excerpt && <p class="mt-4 text-xl text-paper/75 leading-relaxed">{post.excerpt}</p>}
+    {post.cover_image_url && <img src={post.cover_image_url} alt={post.title} class="mt-8 w-full rounded-2xl" />}
+    <div class="prose prose-invert mt-8" set:html={renderBody(post.body)}></div>
+  </article>
+</Base>

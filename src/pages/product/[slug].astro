@@ -1,0 +1,287 @@
+---
+import Base from "../../layouts/Base.astro";
+import ProductCard from "../../components/ProductCard.astro";
+import { products, productBySlug, formatPrice } from "../../data/products";
+
+export function getStaticPaths() {
+  return products.map((p) => ({ params: { slug: p.handle } }));
+}
+
+export const prerender = true;
+
+const { slug } = Astro.params;
+const product = productBySlug(slug!);
+if (!product) return Astro.redirect("/shop", 302);
+
+const related = products.filter((p) => p.handle !== product.handle).slice(0, 2);
+const sizes = [...new Set(product.variants.map((v) => v.option1_value).filter(Boolean))];
+const colors = product.option2_name === "Color" ? [...new Set(product.variants.map((v) => v.option2_value).filter(Boolean))] : [];
+
+const colorMap: Record<string, string> = {
+  green: "#2f6d3c",
+  gray:  "#7a7a7a",
+  red:   "#a23329",
+};
+
+const schema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.seo_description || product.description,
+    image: [product.image_url],
+    sku: product.variants[0]?.sku,
+    brand: { "@type": "Brand", name: product.vendor },
+    category: product.product_category,
+    offers: product.variants.map((v) => ({
+      "@type": "Offer",
+      sku: v.sku,
+      price: (v.price_pence / 100).toFixed(2),
+      priceCurrency: "GBP",
+      availability: (v.inventory > 0 || !product.requires_shipping) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      url: new URL(`/product/${product.handle}`, Astro.site).toString(),
+      itemCondition: "https://schema.org/NewCondition",
+    })),
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: Astro.site?.toString() },
+      { "@type": "ListItem", position: 2, name: "Shop", item: new URL("/shop", Astro.site).toString() },
+      { "@type": "ListItem", position: 3, name: product.title, item: new URL(`/product/${product.handle}`, Astro.site).toString() },
+    ],
+  },
+];
+---
+<Base
+  title={product.seo_title || `${product.title} \u00b7 Harmony Threads`}
+  description={product.seo_description || product.description}
+  ogImage={product.image_url}
+  ogType="product"
+  structuredData={schema}
+>
+  <article class="max-w-7xl mx-auto px-5 md:px-8 pt-10 pb-24">
+    <nav class="text-xs text-paper/60 mb-8">
+      <a href="/" class="hover:text-amber">Home</a>
+      <span class="mx-2">/</span>
+      <a href="/shop" class="hover:text-amber">Shop</a>
+      <span class="mx-2">/</span>
+      <span class="text-paper/80">{product.title}</span>
+    </nav>
+
+    <div class="grid lg:grid-cols-2 gap-10 md:gap-16">
+      <div class="relative">
+        <div class="relative aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 bg-black">
+          <img id="hero-img" src={product.image_url} alt={product.alt_text} class="w-full h-full object-cover" />
+          {product.compare_at_pence && (
+            <span class="absolute top-4 left-4 rounded-full bg-rust text-paper text-xs font-semibold px-3 py-1.5">-{Math.round(100 - (product.price_pence / product.compare_at_pence) * 100)}% off</span>
+          )}
+        </div>
+        <div class="mt-3 grid grid-cols-4 gap-3">
+          {product.variants.slice(0, 4).map((v) => (
+            <button class="aspect-square rounded-lg overflow-hidden border border-white/10 hover:border-amber" data-img={v.image_url} data-alt={v.alt_text}>
+              <img src={v.image_url} alt={v.alt_text} class="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p class="text-xs uppercase tracking-[0.2em] text-amber/90">{product.vendor} \u00b7 {product.type}</p>
+        <h1 class="font-display text-4xl md:text-5xl leading-tight mt-3">{product.title}</h1>
+        <div class="mt-4 flex items-baseline gap-3">
+          <span class="font-display text-3xl">{formatPrice(product.price_pence)}</span>
+          {product.compare_at_pence && <span class="text-paper/50 line-through">{formatPrice(product.compare_at_pence)}</span>}
+          <span class="text-sm text-paper/60">incl. VAT</span>
+        </div>
+
+        <p class="mt-6 text-paper/75 leading-relaxed">{product.description}</p>
+
+        <form id="buy-form" class="mt-8 space-y-6" data-handle={product.handle} data-title={product.title} data-image={product.image_url} data-price={product.price_pence} data-shipping={product.requires_shipping ? "1" : "0"}>
+          {sizes.length > 0 && product.option1_name !== "Format" && product.option1_name !== "Tier" && (
+            <div>
+              <p class="text-sm text-paper/70 mb-2 flex justify-between"><span>{product.option1_name}</span><a href="/faq#sizing" class="text-amber hover:underline">Size guide</a></p>
+              <div class="flex flex-wrap gap-2" data-group="size">
+                {sizes.map((s, i) => (
+                  <button type="button" data-value={s} class={`size-opt px-4 py-2 rounded-lg border border-white/20 text-sm hover:border-amber ${i===0?'is-active':''}`}>{s}</button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {sizes.length > 0 && (product.option1_name === "Format" || product.option1_name === "Tier") && (
+            <div>
+              <p class="text-sm text-paper/70 mb-2">{product.option1_name}</p>
+              <div class="flex flex-wrap gap-2" data-group="size">
+                {product.variants.map((v, i) => (
+                  <button type="button" data-value={v.option1_value} data-price={v.price_pence} class={`size-opt px-4 py-2 rounded-lg border border-white/20 text-sm hover:border-amber ${i===0?'is-active':''}`}>{v.option1_value}  <span class="text-paper/60 ml-1">\u00b7 {formatPrice(v.price_pence)}</span></button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {colors.length > 0 && (
+            <div>
+              <p class="text-sm text-paper/70 mb-2">Colour</p>
+              <div class="flex flex-wrap gap-3" data-group="color">
+                {colors.map((c, i) => (
+                  <button type="button" data-value={c} class={`color-opt w-10 h-10 rounded-full ring-offset-2 ring-offset-ink ${i===0?'ring-2 ring-amber':''}`} style={`background:${colorMap[c] || c};`} aria-label={c}></button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <p class="text-sm text-paper/70 mb-2">Quantity</p>
+            <div class="inline-flex items-center border border-white/20 rounded-lg">
+              <button type="button" id="q-dec" class="w-10 h-10 hover:text-amber">\u2013</button>
+              <input id="q-input" type="number" value="1" min="1" max="10" class="w-12 bg-transparent text-center focus:outline-none" />
+              <button type="button" id="q-inc" class="w-10 h-10 hover:text-amber">+</button>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-3 pt-2">
+            <button id="add-to-cart" type="button" class="flex-1 rounded-full bg-amber text-ink font-semibold px-6 py-3.5 hover:bg-amber-dark transition">Add to cart</button>
+            <button id="buy-now" type="button" class="flex-1 rounded-full border border-amber px-6 py-3.5 hover:bg-amber hover:text-ink transition">Buy it now</button>
+          </div>
+          <p id="stock-msg" class="text-xs text-paper/60"></p>
+        </form>
+
+        <details class="mt-8 border-t border-white/10 pt-4">
+          <summary class="cursor-pointer flex justify-between items-center list-none">
+            <span class="font-display text-lg">Highlights</span>
+            <span class="text-amber">+</span>
+          </summary>
+          <ul class="mt-3 space-y-2 text-sm text-paper/75">
+            {product.tags.map((t) => <li>\u2022 {t}</li>)}
+          </ul>
+        </details>
+        <details class="mt-2 border-t border-white/10 pt-4">
+          <summary class="cursor-pointer flex justify-between items-center list-none">
+            <span class="font-display text-lg">Shipping & returns</span>
+            <span class="text-amber">+</span>
+          </summary>
+          <p class="mt-3 text-sm text-paper/75">{product.requires_shipping ? 'Physical items ship within 2\u20133 working days from Manchester. Free UK delivery over \u00a340, \u00a35.50 otherwise. 30-day no-fuss returns \u2014 see /shipping-returns for the full policy.' : 'Digital downloads are emailed instantly after checkout. Lost a link? Reply to your receipt and we\u0027ll re-send within an hour.'}</p>
+        </details>
+      </div>
+    </div>
+
+    {product.variants.length > 1 && (
+      <section class="mt-20">
+        <h2 class="font-display text-2xl mb-4">Every variant, in stock</h2>
+        <div class="overflow-x-auto rounded-xl border border-white/10">
+          <table class="w-full text-sm">
+            <thead class="bg-black/40 text-paper/60 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="text-left px-4 py-3">SKU</th>
+                <th class="text-left px-4 py-3">{product.option1_name}</th>
+                {product.option2_name && <th class="text-left px-4 py-3">{product.option2_name}</th>}
+                <th class="text-right px-4 py-3">Price</th>
+                <th class="text-right px-4 py-3">Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              {product.variants.map((v) => (
+                <tr class="border-t border-white/5">
+                  <td class="px-4 py-2.5 font-mono text-xs">{v.sku}</td>
+                  <td class="px-4 py-2.5">{v.option1_value}</td>
+                  {product.option2_name && <td class="px-4 py-2.5 capitalize">{v.option2_value}</td>}
+                  <td class="px-4 py-2.5 text-right">{formatPrice(v.price_pence)}</td>
+                  <td class="px-4 py-2.5 text-right">{product.requires_shipping ? (v.inventory > 0 ? `${v.inventory} left` : 'Sold out') : 'Instant'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    )}
+  </article>
+
+  {related.length > 0 && (
+    <section class="max-w-7xl mx-auto px-5 md:px-8 pb-24">
+      <h2 class="font-display text-3xl mb-6">You might also like</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        {related.map((p) => <ProductCard product={p} />)}
+      </div>
+    </section>
+  )}
+
+  <script is:inline>
+    (function () {
+      var form = document.getElementById('buy-form');
+      if (!form) return;
+      var heroImg = document.getElementById('hero-img');
+      var qInput = document.getElementById('q-input');
+      var stockMsg = document.getElementById('stock-msg');
+      var basePrice = Number(form.dataset.price);
+
+      document.querySelectorAll('[data-group]').forEach(function (group) {
+        group.addEventListener('click', function (e) {
+          var btn = e.target.closest('.size-opt, .color-opt');
+          if (!btn) return;
+          group.querySelectorAll('button').forEach(function (b) {
+            b.classList.remove('is-active','ring-2','ring-amber','bg-amber','text-ink');
+            if (b.classList.contains('size-opt')) b.classList.add('border-white/20');
+          });
+          btn.classList.add('is-active');
+          if (btn.classList.contains('size-opt')) {
+            btn.classList.add('bg-amber','text-ink');
+            btn.classList.remove('border-white/20');
+            if (btn.dataset.price) {
+              basePrice = Number(btn.dataset.price);
+              form.dataset.price = basePrice;
+            }
+          }
+          if (btn.classList.contains('color-opt')) btn.classList.add('ring-2','ring-amber');
+        });
+      });
+
+      document.querySelectorAll('[data-img]').forEach(function (t) {
+        t.addEventListener('click', function () {
+          if (heroImg) { heroImg.src = t.dataset.img; heroImg.alt = t.dataset.alt || ''; }
+        });
+      });
+
+      document.getElementById('q-dec')?.addEventListener('click', function () { qInput.value = Math.max(1, Number(qInput.value) - 1); });
+      document.getElementById('q-inc')?.addEventListener('click', function () { qInput.value = Math.min(10, Number(qInput.value) + 1); });
+
+      function getSelected() {
+        var active = document.querySelector('[data-group="size"] .is-active');
+        var activeColor = document.querySelector('[data-group="color"] .is-active') || document.querySelector('[data-group="color"] .ring-2');
+        return {
+          handle: form.dataset.handle,
+          title: form.dataset.title,
+          image: form.dataset.image,
+          size: active?.dataset.value || null,
+          color: activeColor?.dataset.value || null,
+          price_pence: basePrice,
+          quantity: Number(qInput.value) || 1,
+          requires_shipping: form.dataset.shipping === '1',
+        };
+      }
+
+      function addToCart(item) {
+        var cart = [];
+        try { cart = JSON.parse(localStorage.getItem('ht-cart') || '[]'); } catch (e) {}
+        var key = item.handle + '|' + (item.size || '') + '|' + (item.color || '');
+        var existing = cart.find(function (c) { return c.key === key; });
+        if (existing) existing.quantity += item.quantity;
+        else cart.push(Object.assign({ key: key }, item));
+        localStorage.setItem('ht-cart', JSON.stringify(cart));
+        window.dispatchEvent(new Event('ht-cart-changed'));
+      }
+
+      document.getElementById('add-to-cart')?.addEventListener('click', function () {
+        var item = getSelected();
+        addToCart(item);
+        if (stockMsg) { stockMsg.textContent = '\u2713 Added to cart. Cart is in the nav bar.'; stockMsg.className = 'text-xs text-amber'; }
+      });
+      document.getElementById('buy-now')?.addEventListener('click', function () {
+        var item = getSelected();
+        addToCart(item);
+        window.location.href = '/cart?checkout=1';
+      });
+    })();
+  </script>
+</Base>
