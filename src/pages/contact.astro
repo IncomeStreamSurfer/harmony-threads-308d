@@ -1,0 +1,77 @@
+---
+import Base from "../layouts/Base.astro";
+
+const schema = [
+  { "@context": "https://schema.org", "@type": "ContactPage", name: "Contact Harmony Threads", url: new URL("/contact", Astro.site).toString() },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: Astro.site?.toString() },
+      { "@type": "ListItem", position: 2, name: "Contact", item: new URL("/contact", Astro.site).toString() },
+    ],
+  },
+];
+---
+<Base title="Contact Harmony Threads" description="Order questions, wholesale enquiries, press \u2014 we read every note." structuredData={schema}>
+  <section class="max-w-4xl mx-auto px-5 md:px-8 pt-16 pb-10">
+    <nav class="text-xs text-paper/60 mb-6">
+      <a href="/" class="hover:text-amber">Home</a>
+      <span class="mx-2">/</span>
+      <span class="text-paper/80">Contact</span>
+    </nav>
+    <h1 class="font-display text-5xl md:text-6xl">Say something true.</h1>
+    <p class="mt-4 max-w-2xl text-paper/75">Orders, wholesale, press, or just a record recommendation \u2014 the note below lands in our inbox and we read every one.</p>
+  </section>
+
+  <section class="max-w-4xl mx-auto px-5 md:px-8 grid md:grid-cols-3 gap-10 pb-16">
+    <form id="contact-form" class="md:col-span-2 space-y-5" method="post" action="/api/contact">
+      <div>
+        <label class="block text-sm text-paper/70 mb-1.5">Your name</label>
+        <input name="name" required class="w-full bg-black border border-white/15 rounded-lg px-4 py-3 focus:outline-none focus:border-amber" />
+      </div>
+      <div>
+        <label class="block text-sm text-paper/70 mb-1.5">Email</label>
+        <input type="email" name="email" required class="w-full bg-black border border-white/15 rounded-lg px-4 py-3 focus:outline-none focus:border-amber" />
+      </div>
+      <div>
+        <label class="block text-sm text-paper/70 mb-1.5">Message</label>
+        <textarea name="message" required rows="6" class="w-full bg-black border border-white/15 rounded-lg px-4 py-3 focus:outline-none focus:border-amber"></textarea>
+      </div>
+      <button class="rounded-full bg-amber text-ink font-semibold px-6 py-3 hover:bg-amber-dark">Send</button>
+      <p id="contact-result" class="text-sm"></p>
+    </form>
+    <aside class="space-y-6 text-sm text-paper/75">
+      <div>
+        <h3 class="font-display text-lg mb-1">Studio</h3>
+        <p>18 Stevenson Square<br/>Manchester M1 1DB<br/>United Kingdom</p>
+      </div>
+      <div>
+        <h3 class="font-display text-lg mb-1">Email</h3>
+        <p><a class="text-amber hover:underline" href="mailto:hello@harmonythreads.shop">hello@harmonythreads.shop</a></p>
+      </div>
+      <div>
+        <h3 class="font-display text-lg mb-1">Hours</h3>
+        <p>Orders ship Tue\u2013Sat. Studio visits by appointment only.</p>
+      </div>
+    </aside>
+  </section>
+
+  <script is:inline>
+    document.getElementById('contact-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var form = e.target, res = document.getElementById('contact-result');
+      res.textContent = 'Sending\u2026'; res.className = 'text-sm text-paper/60';
+      var data = Object.fromEntries(new FormData(form).entries());
+      try {
+        var r = await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        var j = await r.json();
+        if (!r.ok || !j.ok) throw new Error(j.error || 'Something went wrong');
+        res.textContent = '\u2713 Thanks \u2014 we\u0027ll reply within two working days.'; res.className = 'text-sm text-amber';
+        form.reset();
+      } catch (err) {
+        res.textContent = err.message; res.className = 'text-sm text-rust';
+      }
+    });
+  </script>
+</Base>

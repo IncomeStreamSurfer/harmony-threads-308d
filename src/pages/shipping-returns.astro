@@ -1,0 +1,46 @@
+---
+import Base from "../layouts/Base.astro";
+const schema = [
+  { "@context": "https://schema.org", "@type": "WebPage", name: "Shipping & Returns \u2014 Harmony Threads", url: new URL("/shipping-returns", Astro.site).toString() },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: Astro.site?.toString() },
+      { "@type": "ListItem", position: 2, name: "Shipping & Returns", item: new URL("/shipping-returns", Astro.site).toString() },
+    ],
+  },
+];
+---
+<Base title="Shipping & Returns \u2014 Harmony Threads" description="How Harmony Threads ships, when your order will land, and the 30-day returns policy." structuredData={schema}>
+  <section class="max-w-3xl mx-auto px-5 md:px-8 py-16">
+    <h1 class="font-display text-5xl">Shipping &amp; returns</h1>
+    <div class="mt-6 space-y-8 text-paper/80 leading-relaxed">
+      <div>
+        <h2 class="font-display text-2xl">Where we ship</h2>
+        <p class="mt-2">We ship worldwide. Duties and taxes outside the UK are your responsibility.</p>
+      </div>
+      <div>
+        <h2 class="font-display text-2xl">How long it takes</h2>
+        <ul class="mt-2 list-disc pl-5 space-y-1">
+          <li><strong>UK standard</strong> \u2014 2\u20135 working days, tracked via Royal Mail 48.</li>
+          <li><strong>Europe</strong> \u2014 4\u20138 working days, tracked.</li>
+          <li><strong>Rest of world</strong> \u2014 7\u201314 working days, tracked.</li>
+          <li><strong>Digital downloads</strong> \u2014 delivered by email within minutes.</li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="font-display text-2xl">Free delivery</h2>
+        <p class="mt-2">Free UK standard delivery on physical orders over \u00a340. \u00a35.50 otherwise.</p>
+      </div>
+      <div>
+        <h2 class="font-display text-2xl">30-day returns</h2>
+        <p class="mt-2">Unworn, unwashed apparel can be returned within 30 days for a full refund of the item price. Return postage is on you unless we sent you the wrong thing. Digital downloads are non-refundable once delivered.</p>
+      </div>
+      <div>
+        <h2 class="font-display text-2xl">Need help?</h2>
+        <p class="mt-2">Send us a note at <a href="mailto:hello@harmonythreads.shop" class="text-amber underline">hello@harmonythreads.shop</a> \u2014 we reply within two working days.</p>
+      </div>
+    </div>
+  </section>
+</Base>

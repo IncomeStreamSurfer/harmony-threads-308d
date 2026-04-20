@@ -1,0 +1,56 @@
+---
+import Base from "../layouts/Base.astro";
+
+const faqs = [
+  { q: "When will my order ship?", a: "Physical items (apparel, fragrance) ship from Manchester within 2\u20133 working days. UK orders arrive in 3\u20135 working days; rest of world 7\u201314 working days. Digital downloads arrive by email within minutes of your payment clearing." },
+  { q: "How do I know what size to order?", a: "Our Physical Product \u201cThe Band\u201d T-Shirt is a unisex fit screened on a 180gsm heavyweight cotton blank. Small fits a 36\u201d chest, Medium 40\u201d, Large 44\u201d, XL 48\u201d. Size up for oversized.", id: "sizing" },
+  { q: "Can I return a tee?", a: "Yes \u2014 within 30 days, unworn and unwashed, we refund the full item price. Return postage is on you unless the issue was ours. See /shipping-returns for the full policy." },
+  { q: "Is the eBook DRM-free?", a: "Yes. We send it as a plain PDF, a Kindle .mobi and a full audiobook. Yours to keep, back up, and re-download anytime." },
+  { q: "Do you restock sold-out items?", a: "Usually no \u2014 runs are limited by design. We'll announce a restock on the Journal newsletter if we ever make one." },
+  { q: "Do you offer wholesale or custom orders?", a: "We do a limited wholesale programme for independent record shops and small chains. Email wholesale@harmonythreads.shop or use the /contact form." },
+  { q: "Where do you ship?", a: "UK, EU, US, Canada, Australia, New Zealand and most of the rest of the world. Duties and taxes are your responsibility outside the UK." },
+  { q: "Can I cancel an order?", a: "If it hasn't shipped yet, yes \u2014 email hello@harmonythreads.shop with your order number within 2 hours of placing the order and we'll refund you in full." },
+];
+
+const schema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: Astro.site?.toString() },
+      { "@type": "ListItem", position: 2, name: "FAQ",  item: new URL("/faq", Astro.site).toString() },
+    ],
+  },
+];
+---
+<Base title="FAQ \u2014 Harmony Threads" description="Shipping, returns, sizing, restocks, wholesale \u2014 the short answers." structuredData={schema}>
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pt-16 pb-10">
+    <nav class="text-xs text-paper/60 mb-6">
+      <a href="/" class="hover:text-amber">Home</a>
+      <span class="mx-2">/</span>
+      <span class="text-paper/80">FAQ</span>
+    </nav>
+    <h1 class="font-display text-5xl">Common questions.</h1>
+    <p class="mt-4 text-paper/75">Can't find what you need? <a class="text-amber hover:underline" href="/contact">Drop us a note</a>.</p>
+  </section>
+  <section class="max-w-3xl mx-auto px-5 md:px-8 pb-16 space-y-3">
+    {faqs.map((f, i) => (
+      <details class="rounded-xl border border-white/10 bg-black/40 p-5 group" id={f.id}>
+        <summary class="cursor-pointer flex items-center justify-between font-display text-lg list-none">
+          <span>{f.q}</span>
+          <span class="text-amber group-open:rotate-45 transition">+</span>
+        </summary>
+        <p class="mt-3 text-paper/75 text-sm leading-relaxed">{f.a}</p>
+      </details>
+    ))}
+  </section>
+</Base>

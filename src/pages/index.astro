@@ -1,0 +1,176 @@
+---
+import Base from "../layouts/Base.astro";
+import ProductCard from "../components/ProductCard.astro";
+import { products, formatPrice } from "../data/products";
+
+const featured = products[0];
+
+const homeSchema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Harmony Threads \u2014 Music Merch, Stories, and Scents",
+    url: Astro.site?.toString() || "",
+    description: "Shop small-batch music merch, eBooks, and fragrance from Harmony Threads.",
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: products.map((p, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: new URL(`/product/${p.handle}`, Astro.site || "https://harmony-threads.vercel.app").toString(),
+      name: p.title,
+    })),
+  },
+];
+---
+<Base
+  title="Harmony Threads \u2014 Music Merch, Stories & Scents"
+  description="Wear the music. Live the legacy. Small-batch rock music merch, eBooks and fragrance, shipped worldwide."
+  ogImage={featured.image_url}
+  structuredData={homeSchema}
+>
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 -z-10">
+      <div class="absolute inset-0 bg-gradient-to-br from-ink via-ink to-black"></div>
+      <div class="absolute inset-0 opacity-[0.22] bg-[radial-gradient(ellipse_at_top_right,#d97706,transparent_55%)]"></div>
+      <div class="absolute inset-0 opacity-[0.10] bg-[radial-gradient(ellipse_at_bottom_left,#b04323,transparent_60%)]"></div>
+      <div class="noise"></div>
+    </div>
+    <div class="max-w-7xl mx-auto px-5 md:px-8 pt-16 md:pt-24 pb-20 md:pb-28 grid lg:grid-cols-12 gap-10 items-center">
+      <div class="lg:col-span-7 relative">
+        <p class="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-amber/90 border border-amber/30 rounded-full px-3 py-1 mb-6">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber animate-pulse"></span>
+          Vol. 26 \u00b7 Spring 2026 drop live
+        </p>
+        <h1 class="font-display text-5xl md:text-7xl lg:text-8xl leading-[0.95] tracking-tight">
+          Wear the music.<br />
+          <span class="italic text-amber">Live the legacy.</span>
+        </h1>
+        <p class="mt-6 max-w-xl text-lg md:text-xl text-paper/75 leading-relaxed">
+          Harmony Threads is a small-batch record store for the rest of your life \u2014 graphic tees, long-form rock histories, and late-night fragrance, built for the people who still turn it up to eleven.
+        </p>
+        <div class="mt-9 flex flex-wrap items-center gap-4">
+          <a href="/shop" class="inline-flex items-center gap-2 rounded-full bg-amber text-ink font-semibold px-7 py-3.5 hover:bg-amber-dark transition glow-amber">
+            Shop the collection
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </a>
+          <a href="#featured" class="inline-flex items-center gap-2 text-paper/80 hover:text-amber">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5v14l11-7z"/></svg>
+            See what's in the crate
+          </a>
+        </div>
+        <dl class="mt-14 grid grid-cols-3 gap-4 max-w-lg text-sm">
+          <div>
+            <dt class="font-display text-2xl text-amber">513</dt>
+            <dd class="text-paper/60">tees in stock \u00b7 3 colours</dd>
+          </div>
+          <div>
+            <dt class="font-display text-2xl text-amber">3</dt>
+            <dd class="text-paper/60">formats of the eBook</dd>
+          </div>
+          <div>
+            <dt class="font-display text-2xl text-amber">50ml</dt>
+            <dd class="text-paper/60">signature fragrance</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="lg:col-span-5 relative">
+        <div class="relative aspect-[4/5] rounded-2xl overflow-hidden glow-amber border border-amber/25">
+          <img src={featured.image_url} alt={featured.alt_text} class="w-full h-full object-cover" loading="eager" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent"></div>
+          <div class="absolute bottom-0 left-0 right-0 p-6">
+            <p class="text-xs uppercase tracking-[0.2em] text-amber/90">Now playing</p>
+            <h3 class="font-display text-2xl mt-1">{featured.title}</h3>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="flex items-baseline gap-2">
+                <span class="font-display text-2xl">{formatPrice(featured.price_pence)}</span>
+                {featured.compare_at_pence && <span class="text-sm text-paper/50 line-through">{formatPrice(featured.compare_at_pence)}</span>}
+              </div>
+              <a href={`/product/${featured.handle}`} class="text-sm underline underline-offset-4 hover:text-amber">View \u2192</a>
+            </div>
+          </div>
+        </div>
+        <div class="absolute -top-4 -right-4 rotate-6 rounded-xl bg-rust text-paper px-4 py-2 text-xs uppercase tracking-[0.2em] shadow-xl">20% off release week</div>
+      </div>
+    </div>
+
+    <div class="border-y border-white/10 bg-black/50 overflow-hidden">
+      <div class="animate-marquee flex gap-10 py-4 whitespace-nowrap font-display text-xl md:text-2xl text-paper/70">
+        {Array.from({ length: 2 }).flatMap((_, i) => ["Small-batch merch","Worldwide shipping","Instant digital downloads","Late-night fragrance","Free UK delivery over \u00a340","Small-batch merch","Worldwide shipping","Instant digital downloads","Late-night fragrance","Free UK delivery over \u00a340"]).map((t) => (
+          <span class="flex items-center gap-10">
+            <span>{t}</span>
+            <span class="text-amber">\u2726</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="featured" class="max-w-7xl mx-auto px-5 md:px-8 py-20 md:py-28">
+    <div class="flex items-end justify-between mb-10">
+      <div>
+        <p class="text-xs uppercase tracking-[0.2em] text-amber/90 mb-3">The shelf</p>
+        <h2 class="font-display text-4xl md:text-5xl">Three things. Worth the shelf.</h2>
+      </div>
+      <a href="/shop" class="hidden md:inline text-sm text-paper/70 hover:text-amber">See all \u2192</a>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 md:gap-8">
+      {products.map((p) => <ProductCard product={p} />)}
+    </div>
+  </section>
+
+  <section class="relative bg-black/40 border-y border-white/10">
+    <div class="max-w-7xl mx-auto px-5 md:px-8 py-20 md:py-28 grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <p class="text-xs uppercase tracking-[0.2em] text-amber/90 mb-3">Founded 2022 \u00b7 Manchester</p>
+        <h2 class="font-display text-4xl md:text-5xl leading-tight">We started in a basement, <span class="italic text-amber">next to the amp.</span></h2>
+        <p class="mt-6 text-paper/75 leading-relaxed">
+          Two friends, one broken Tascam, and a stack of out-of-print rock histories. Harmony Threads grew out of the belief that a t-shirt, a book, and a bottle of scent can say the same thing as a four-minute song \u2014 if someone cares enough to make them right.
+        </p>
+        <p class="mt-4 text-paper/75 leading-relaxed">
+          Every run is small. Every print is screened by hand at our studio. Every fragrance is blended in 40-bottle batches. Nothing dropshipped, nothing faked.
+        </p>
+        <div class="mt-8 flex gap-4">
+          <a href="/about" class="rounded-full border border-amber/60 px-5 py-2.5 text-sm hover:bg-amber hover:text-ink transition">Our story</a>
+          <a href="/blog" class="rounded-full border border-white/20 px-5 py-2.5 text-sm hover:border-amber hover:text-amber transition">Read the journal</a>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <img src="https://burst.shopifycdn.com/photos/vinyl-records.jpg?width=900" alt="Vinyl records stacked on a table" class="rounded-xl aspect-[4/5] object-cover" />
+        <img src="https://burst.shopifycdn.com/photos/black-glass-perfume-bottle-and-spritzer.jpg?width=900" alt="Black glass perfume bottle" class="rounded-xl aspect-[4/5] object-cover mt-10" />
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-5 md:px-8 py-20 md:py-24">
+    <div class="grid md:grid-cols-3 gap-6">
+      {[
+        { h: "Small-batch always", p: "Every tee is screened in runs of 40 or fewer. When it's gone, it's gone. No reprints, no drop-ship." },
+        { h: "Instant digital", p: "Our eBook ships to your inbox the second the Stripe payment clears. PDF, Kindle and audiobook included." },
+        { h: "Stories that age", p: "Harmony Threads is as much a publisher as a shop. New long-form pieces land in the Journal every month." },
+      ].map((b) => (
+        <div class="rounded-2xl border border-white/10 bg-black/30 p-7 hover:border-amber/50 transition">
+          <div class="w-10 h-10 rounded-full bg-amber/15 text-amber grid place-items-center mb-5">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+          </div>
+          <h3 class="font-display text-2xl">{b.h}</h3>
+          <p class="mt-3 text-paper/70 leading-relaxed text-sm">{b.p}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="max-w-4xl mx-auto px-5 md:px-8 py-20">
+    <div class="rounded-3xl border border-amber/30 bg-gradient-to-br from-black to-ink p-10 md:p-14 text-center">
+      <h2 class="font-display text-3xl md:text-4xl">Join the tape deck.</h2>
+      <p class="mt-3 text-paper/70">One email a month. Drops, restocks, and one hand-picked record worth your evening.</p>
+      <form action="/api/subscribe" method="post" class="mt-8 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+        <input type="email" name="email" required placeholder="you@loudworld.com" class="flex-1 bg-black border border-white/15 rounded-lg px-4 py-3 placeholder:text-paper/40 focus:outline-none focus:border-amber" />
+        <button class="rounded-lg bg-amber text-ink font-semibold px-6 py-3 hover:bg-amber-dark">Subscribe</button>
+      </form>
+      <p class="mt-3 text-xs text-paper/50">No hype, no spam. Unsubscribe any time.</p>
+    </div>
+  </section>
+</Base>
