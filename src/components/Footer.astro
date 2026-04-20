@@ -1,0 +1,50 @@
+---
+const year = new Date().getFullYear();
+---
+<footer class="border-t border-white/10 bg-black/60 mt-24">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 py-16 grid md:grid-cols-4 gap-10">
+    <div class="md:col-span-1">
+      <div class="flex items-center gap-2">
+        <svg class="w-7 h-7" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="8" fill="#0a0a0a" stroke="#d97706" stroke-width="1.5"/><path d="M14 34V14l20 4v16a5 5 0 11-3-4.5V21l-14-3v13.5a5 5 0 11-3-4.5" fill="#d97706"/></svg>
+        <span class="font-display text-xl">Harmony Threads</span>
+      </div>
+      <p class="mt-4 text-sm text-paper/60 leading-relaxed">Small-batch music merch, stories and scents — shipped worldwide from the quiet end of a loud scene.</p>
+    </div>
+    <div>
+      <h4 class="font-display text-lg mb-4">Shop</h4>
+      <ul class="space-y-2 text-sm text-paper/70">
+        <li><a class="hover:text-amber" href="/shop">All products</a></li>
+        <li><a class="hover:text-amber" href="/collections/apparel">Apparel</a></li>
+        <li><a class="hover:text-amber" href="/collections/digital">Digital downloads</a></li>
+        <li><a class="hover:text-amber" href="/collections/fragrance">Fragrance</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display text-lg mb-4">Read</h4>
+      <ul class="space-y-2 text-sm text-paper/70">
+        <li><a class="hover:text-amber" href="/about">About</a></li>
+        <li><a class="hover:text-amber" href="/blog">Journal</a></li>
+        <li><a class="hover:text-amber" href="/faq">FAQ</a></li>
+        <li><a class="hover:text-amber" href="/shipping-returns">Shipping & returns</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display text-lg mb-4">Stay tuned</h4>
+      <p class="text-sm text-paper/60 mb-3">Drops, restocks and long-form pieces — once a month, no hype.</p>
+      <form action="/api/subscribe" method="post" class="flex gap-2">
+        <input type="email" name="email" required placeholder="you@loudworld.com" class="flex-1 bg-black border border-white/15 rounded px-3 py-2 text-sm placeholder:text-paper/40 focus:outline-none focus:border-amber" />
+        <button class="rounded bg-amber text-ink font-semibold px-4 py-2 text-sm hover:bg-amber-dark">Join</button>
+      </form>
+    </div>
+  </div>
+  <div class="border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-5 md:px-8 py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs text-paper/50">
+      <p>&copy; {year} Harmony Threads. All records reserved.</p>
+      <div class="flex items-center gap-5">
+        <a class="hover:text-amber" href="/privacy">Privacy</a>
+        <a class="hover:text-amber" href="/terms">Terms</a>
+        <a class="hover:text-amber" href="/contact">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>

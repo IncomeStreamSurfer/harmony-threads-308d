@@ -1,0 +1,71 @@
+---
+import SEOHead from "../components/SEOHead.astro";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  ogType?: string;
+  canonicalUrl?: string;
+  structuredData?: object | object[];
+  noindex?: boolean;
+  publishDate?: string;
+  modifiedDate?: string;
+  author?: string;
+  tags?: string[];
+}
+const props = Astro.props;
+
+const organization = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Harmony Threads",
+  url: Astro.site?.toString() || "",
+  logo: new URL("/favicon.svg", Astro.site || "https://harmony-threads.vercel.app").toString(),
+  description: "Small-batch music merch, digital releases, and fragrance for rock music lovers.",
+  sameAs: [],
+};
+
+const website = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Harmony Threads",
+  url: Astro.site?.toString() || "",
+  description: "Wear the music. Live the legacy.",
+};
+
+const extra = Array.isArray(props.structuredData)
+  ? props.structuredData
+  : props.structuredData
+    ? [props.structuredData]
+    : [];
+const allSchema = [organization, website, ...extra];
+---
+<!doctype html>
+<html lang="en" class="bg-ink text-paper">
+  <head>
+    <SEOHead
+      title={props.title}
+      description={props.description}
+      ogImage={props.ogImage}
+      ogType={props.ogType}
+      canonicalUrl={props.canonicalUrl}
+      author={props.author}
+      publishDate={props.publishDate}
+      modifiedDate={props.modifiedDate}
+      tags={props.tags}
+      structuredData={allSchema}
+      noindex={props.noindex}
+    />
+  </head>
+  <body class="bg-ink text-paper antialiased">
+    <Nav />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

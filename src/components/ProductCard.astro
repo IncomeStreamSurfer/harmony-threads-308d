@@ -1,0 +1,30 @@
+---
+import { formatPrice } from "../data/products";
+import type { Product } from "../data/products";
+
+interface Props { product: Product; }
+const { product: p } = Astro.props;
+---
+<a href={`/product/${p.handle}`} class="group relative rounded-2xl overflow-hidden border border-white/10 bg-black/40 hover:border-amber/50 transition flex flex-col">
+  <div class="relative aspect-[4/5] overflow-hidden bg-black">
+    <img src={p.image_url} alt={p.alt_text} class="w-full h-full object-cover group-hover:scale-105 transition duration-700" loading="lazy" />
+    {p.compare_at_pence && (
+      <span class="absolute top-3 left-3 rounded-full bg-rust text-paper text-xs font-semibold px-2.5 py-1">-{Math.round(100 - (p.price_pence / p.compare_at_pence) * 100)}%</span>
+    )}
+    {!p.requires_shipping && (
+      <span class="absolute top-3 right-3 rounded-full bg-amber/90 text-ink text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1">Instant</span>
+    )}
+  </div>
+  <div class="p-5 md:p-6 flex flex-col flex-1">
+    <p class="text-[11px] uppercase tracking-[0.18em] text-amber/80">{p.vendor}</p>
+    <h3 class="font-display text-xl mt-1 group-hover:text-amber transition leading-snug">{p.title}</h3>
+    <p class="mt-2 text-sm text-paper/60 line-clamp-2 flex-1">{p.description.split('.')[0]}.</p>
+    <div class="mt-4 flex items-baseline justify-between">
+      <div class="flex items-baseline gap-2">
+        <span class="font-display text-xl">{formatPrice(p.price_pence)}</span>
+        {p.compare_at_pence && <span class="text-sm text-paper/50 line-through">{formatPrice(p.compare_at_pence)}</span>}
+      </div>
+      <span class="text-xs text-paper/50">{p.variants.length > 1 ? `${p.variants.length} variants` : "Single"}</span>
+    </div>
+  </div>
+</a>

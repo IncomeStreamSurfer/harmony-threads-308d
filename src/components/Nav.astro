@@ -1,0 +1,50 @@
+---
+const path = Astro.url.pathname;
+const nav = [
+  { href: "/shop", label: "Shop" },
+  { href: "/collections/apparel", label: "Apparel" },
+  { href: "/collections/digital", label: "Digital" },
+  { href: "/collections/fragrance", label: "Fragrance" },
+  { href: "/about", label: "About" },
+  { href: "/blog", label: "Journal" },
+];
+---
+<header class="sticky top-0 z-50 backdrop-blur-md bg-ink/80 border-b border-white/10">
+  <nav class="max-w-7xl mx-auto flex items-center justify-between px-5 md:px-8 h-16 md:h-20">
+    <a href="/" class="flex items-center gap-2 group">
+      <svg class="w-7 h-7" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="8" fill="#0a0a0a" stroke="#d97706" stroke-width="1.5"/><path d="M14 34V14l20 4v16a5 5 0 11-3-4.5V21l-14-3v13.5a5 5 0 11-3-4.5" fill="#d97706"/></svg>
+      <span class="font-display text-xl md:text-2xl tracking-tight group-hover:text-amber transition">Harmony Threads</span>
+    </a>
+    <div class="hidden md:flex items-center gap-7 text-sm">
+      {nav.map((n) => (
+        <a href={n.href} class={`hover:text-amber transition ${path.startsWith(n.href) ? 'text-amber' : 'text-paper/80'}`}>{n.label}</a>
+      ))}
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/contact" class="hidden md:inline text-sm text-paper/70 hover:text-amber">Contact</a>
+      <a href="/cart" id="nav-cart-link" class="relative inline-flex items-center gap-2 rounded-full border border-amber/60 px-3 md:px-4 py-1.5 md:py-2 text-sm hover:bg-amber hover:text-ink transition">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h2l2 13h12l2-9H6"/><circle cx="9" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/></svg>
+        <span>Cart</span>
+        <span id="nav-cart-count" class="hidden ml-1 rounded-full bg-amber text-ink text-xs font-semibold px-2 py-0.5">0</span>
+      </a>
+    </div>
+  </nav>
+</header>
+<script is:inline>
+  (function () {
+    function render() {
+      try {
+        var c = JSON.parse(localStorage.getItem('ht-cart') || '[]');
+        var total = c.reduce(function (s, i) { return s + (i.quantity || 0); }, 0);
+        var el = document.getElementById('nav-cart-count');
+        if (!el) return;
+        if (total > 0) { el.textContent = String(total); el.classList.remove('hidden'); }
+        else { el.classList.add('hidden'); }
+      } catch (e) {}
+    }
+    window.addEventListener('storage', render);
+    window.addEventListener('ht-cart-changed', render);
+    document.addEventListener('DOMContentLoaded', render);
+    render();
+  })();
+</script>
